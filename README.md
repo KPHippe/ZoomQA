@@ -25,4 +25,13 @@ The Estimation of Model Accuracy problem is a cornerstone problem in the field o
   - An example output is provided in `Example_Out/`
 
 #### Notes for execution
-- Currently, the input data must be nested in a folder, example below 
+- Currently, the input data must be nested in a folder, example below
+```
+QA_examples
+└───Input
+      └───subfolder1
+          │   input_file_1.pdb
+          │   input_file_1.pdb
+          │   ...
+```
+- Currently only works on one `subfolder` as shown above, will be updated soon
