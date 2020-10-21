@@ -11,11 +11,14 @@ The Estimation of Model Accuracy problem is a cornerstone problem in the field o
 1. Create python virtual environment
 	1. Virtualenv
 		1. `pip install virtualenv` *`pip3` if you still have python2* 
-		1. `python3 -m venv virtual-env-name`
-		1. `source virtual-env-name/bin/activate`
-	1. Conda *after downloading, and activating base*
+		1. `python3 -m venv virtual-env-name` This creates a new virtual environment 
+		1. `source virtual-env-name/bin/activate` This activates your new virtual environment 
+	1. Conda 
+		1. Download [Anaconda](https://www.anaconda.com/products/individual) *download the linux version to your linux machine* 
+		1. Install Anaconda and follow the isntallation instructions, select yes for the init question at very end
+		1. `conda activate base` to get into your 'base' environment, do not install packages to 'base' 
 		1. `conda create -n virtual-env-name python=3.7`
-		1. `conda activate virtual-env-name`
+		1. `conda activate virtual-env-name` this activates your new environment, this is where you install packages 
 1. `pip install -r requirements.txt`
 
 ## Execution
