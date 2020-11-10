@@ -13,6 +13,9 @@ from sklearn.svm import SVR
 
 from script.generate_formatted_SVR_input import parse_server_data
 
+PYTHON_INSTALL = 'python'
+SW_INSTALL = './'
+
 TOP_N = 100
 
 def preprocess_input(pathToInput, pathToSave):
@@ -48,17 +51,23 @@ def preprocess_input(pathToInput, pathToSave):
 
     print("Starting Step0")
     # chain_add_command = f'python ./script/step0_prepare_add_chain_to_folder.py ./script/assist_add_chainID_to_one_pdb.pl {pathToInput} {pathToStep0} > {join(pathToTempDirectory, "step0_log.txt")} 2>&1'
-    chain_add_command = f'python ./script/step0_prepare_add_chain_to_folder.py ./script/assist_add_chainID_to_one_pdb.pl {pathToInput} {pathToStep0}'
+    step0_location = join(SW_INSTALL, 'script/step0_prepare_add_chain_to_folder.py')
+    chain_add_location = join(SW_INSTALL, 'script/assist_add_chainID_to_one_pdb.pl')
+    chain_add_command = f'{PYTHON_INSTALL} {step0_location} {chain_add_location} {pathToInput} {pathToStep0}'
     os.system(chain_add_command)
 
     print("Starting Step1")
     #change it to _linux for linux run, mac for mac run
     # json_command = f'python ./script/step1_create_json_from_PDB.py ./script/stride_mac {pathToStep0} {pathToJSON} > {join(pathToTempDirectory, "step1_log.txt")} 2>&1'
-    json_command = f'python ./script/step1_create_json_from_PDB.py ./script/stride_linux {pathToStep0} {pathToJSON}'
+    step1_location = join(SW_INSTALL, 'script/step1_create_json_from_PDB.py')
+    stride_location = join(SW_INSTALL, 'script/stride_linux')
+    json_command = f'{PYTHON_INSTALL} {step1_location} {stride_location} {pathToStep0} {pathToJSON}'
     os.system(json_command)
 
     print("Starting Step2")
-    frag_structure_command = f'python ./script/step2_generate_casp_fragment_structures.py {pathToJSON} ./script/assist_generation_scripts/RF_Predictions/ {pathToZoomQAInputData}'
+    step2_location = join(SW_INSTALL, 'script/step2_generate_casp_fragment_structures.py')
+    rfpredictions_locations = join(SW_INSTALL, 'script/assist_generation_scripts/RF_Predictions/')
+    frag_structure_command = f'{PYTHON_INSTALL} {step2_location} {pathToJSON} {rfpredictions_locations} {pathToZoomQAInputData}'
     os.system(frag_structure_command)
 
     return f'{pathToZoomQAInputData}'
