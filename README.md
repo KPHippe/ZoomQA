@@ -31,18 +31,18 @@ The Estimation of Model Accuracy problem is a cornerstone problem in the field o
 
 ## Execution
 1. Navigate to ZoomQA folder (currently does not work out of folder, will be updated soon)
-1. `python prediction.py ./QA_examples/Input/ ./TEST_OUT/`
+1. `python prediction.py ./QA_examples/Input/T1096 ./TEST_OUT/`
   - This command runs the prediction and places a text file in TEST_OUT/ folder
   - An example output is provided in `Example_Out/`
 
 #### Notes for execution
-- Currently, the input data must be nested in a folder, example below
+- Currently, the input data must be in a folder even if you are only running one pdb. Please put pdbs in a folder named as the target name. 
 ```
 QA_examples
 └───Input
-      └───subfolder1
+      └───target_name
           │   input_file_1.pdb
           │   input_file_1.pdb
           │   ...
 ```
-- Currently only works on one `subfolder` as shown above, will be updated soon
+- Currently only works on one `target_name` as shown above, will be updated soon
