@@ -17,7 +17,18 @@ PYTHON_INSTALL = 'python'
 SW_INSTALL = './'
 
 TOP_N = 100
+ZOOMQA = '''\
 
+
+  _____                      ___      _    
+ |__  /___   ___  _ __ ___  / _ \    / \   
+   / // _ \ / _ \| '_ ` _ \| | | |  / _ \  
+  / /| (_) | (_) | | | | | | |_| | / ___ \ 
+ /____\___/ \___/|_| |_| |_|\__\_\/_/   \_\
+                                           
+
+
+'''
 def preprocess_input(pathToInput, pathToSave):
     '''
     This method is responsible for taking the pdb input files and extract
@@ -299,7 +310,8 @@ if __name__ == "__main__":
         print(f'python {sys.argv[0]} /path/To/Input/folder/ /path/to/output/save')
         sys.exit()
 
-
+    print(ZOOMQA)
+    sys.exit()
     pathToInput = sys.argv[1]
     pathToSave = sys.argv[2]
 

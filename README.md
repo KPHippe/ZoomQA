@@ -1,5 +1,14 @@
 # ZoomQA
+```
 
+  _____                      ___      _    
+ |__  /___   ___  _ __ ___  / _ \    / \   
+   / // _ \ / _ \| '_ ` _ \| | | |  / _ \  
+  / /| (_) | (_) | | | | | | |_| | / ___ \ 
+ /____\___/ \___/|_| |_| |_|\__\_\/_/   \_\
+                                           
+
+```
 ## Abstract
 The Estimation of Model Accuracy problem is a cornerstone problem in the field of bioinformatics. Due to the resources required for X-ray crystallography and Nuclear Magnetic Resonance, computational methods for predicting a protein's tertiary structure are becoming more and more common. However, when predictions are made for proteins of which we do not know the crystal structure, we run into an issue; How do we tell how good a tertiary structure prediction is? This is the goal of the estimation of model accuracy problem. Here we introduce ZoomQA, a novel, single-model method for assessing the accuracy of a tertiary structure prediction at a residue level. ZoomQA differs from other quality assessment tools, even those that consider the 3D structure of a protein by taking this three-dimensional data one step further. ZoomQA considers the change in chemical and physical features of a fragment structure (a portion of a protein within a radius r of the target amino acid) as the radius of contact increases. ZoomQA uses fourteen physical and chemical properties of amino acids to build a comprehensive representation of every residue within a protein and grades their placement within the protein as a whole.
 
