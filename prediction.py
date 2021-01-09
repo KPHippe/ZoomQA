@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import json
 import math
@@ -52,6 +53,14 @@ def preprocess_input(pathToInput, pathToSave):
         output so that the next step can use it as the input
 
     '''
+    pattern = re.compile(r"T\d{4}[a-zA-Z]*[0-9]*")
+    target_name = re.search(pattern, pathToInput)
+
+    if target_name is not None: 
+        target_name = str(target_name[0])
+    else: 
+        target_name = 'Target'
+
     pathToTempDirectory = join(pathToSave, 'tmp')
     create_folder(pathToTempDirectory)
 
@@ -60,25 +69,26 @@ def preprocess_input(pathToInput, pathToSave):
     pathToJSON = join(pathToTempDirectory, 'JSON_Data')
     pathToZoomQAInputData = join(pathToTempDirectory, 'ZoomQA_Input')
 
-    print("Starting Step0")
+    print("Processing input data...")
     # chain_add_command = f'python ./script/step0_prepare_add_chain_to_folder.py ./script/assist_add_chainID_to_one_pdb.pl {pathToInput} {pathToStep0} > {join(pathToTempDirectory, "step0_log.txt")} 2>&1'
-    step0_location = join(SW_INSTALL, 'script/step0_prepare_add_chain_to_folder.py')
+    create_folder(pathToStep0)
+    pathToStep0OUT = join(pathToStep0, target_name)
+    #this was originally step0_prepare_add_chain_to_folder.py 
+    step0_location = join(SW_INSTALL, 'script/step0_prepare_add_chain_to_folder_v2.py')
     chain_add_location = join(SW_INSTALL, 'script/assist_add_chainID_to_one_pdb.pl')
-    chain_add_command = f'{PYTHON_INSTALL} {step0_location} {chain_add_location} {pathToInput} {pathToStep0}'
+    chain_add_command = f'{PYTHON_INSTALL} {step0_location} {chain_add_location} {pathToInput} {pathToStep0OUT} >/dev/null 2>&1'
     os.system(chain_add_command)
 
-    print("Starting Step1")
     #change it to _linux for linux run, mac for mac run
     # json_command = f'python ./script/step1_create_json_from_PDB.py ./script/stride_mac {pathToStep0} {pathToJSON} > {join(pathToTempDirectory, "step1_log.txt")} 2>&1'
     step1_location = join(SW_INSTALL, 'script/step1_create_json_from_PDB.py')
     stride_location = join(SW_INSTALL, 'script/stride_linux')
-    json_command = f'{PYTHON_INSTALL} {step1_location} {stride_location} {pathToStep0} {pathToJSON}'
+    json_command = f'{PYTHON_INSTALL} {step1_location} {stride_location} {pathToStep0} {pathToJSON} >/dev/null 2>&1'
     os.system(json_command)
 
-    print("Starting Step2")
     step2_location = join(SW_INSTALL, 'script/step2_generate_casp_fragment_structures.py')
     rfpredictions_locations = join(SW_INSTALL, 'script/assist_generation_scripts/RF_Predictions/')
-    frag_structure_command = f'{PYTHON_INSTALL} {step2_location} {pathToJSON} {rfpredictions_locations} {pathToZoomQAInputData}'
+    frag_structure_command = f'{PYTHON_INSTALL} {step2_location} {pathToJSON} {rfpredictions_locations} {pathToZoomQAInputData} >/dev/null 2>&1'
     os.system(frag_structure_command)
 
     return f'{pathToZoomQAInputData}'
@@ -140,8 +150,8 @@ def load_model(pathToModel):
     with open(pathToModel, 'rb') as f:
         model = pickle.load(f)
 
+    print("Model parameters: ")
     print(model)
-    print(f'{pathToModel} loaded....')
 
     return model
 
@@ -259,7 +269,14 @@ def write_predictions(prediction_data, pathToSave, target_name):
 def main(pathToInput, pathToSave):
     start = timer()
     pathToModel = './model/LocalQA_rbf_1_1.mdl'
-    target_name = os.listdir(pathToInput)[0]
+    
+    pattern = re.compile(r"T\d{4}[a-zA-Z]*[0-9]*")
+    target_name = re.search(pattern, pathToInput)
+
+    if target_name is not None: 
+        target_name = str(target_name[0])
+    else: 
+        target_name = 'Target'
 
     #create save folder
     create_folder(pathToSave)
@@ -311,7 +328,7 @@ if __name__ == "__main__":
         sys.exit()
 
     print(ZOOMQA)
-    sys.exit()
+    #sys.exit()
     pathToInput = sys.argv[1]
     pathToSave = sys.argv[2]
 
