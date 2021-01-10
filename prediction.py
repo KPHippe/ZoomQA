@@ -78,19 +78,20 @@ def preprocess_input(pathToInput, pathToSave):
     chain_add_location = join(SW_INSTALL, 'script/assist_add_chainID_to_one_pdb.pl')
     chain_add_command = f'{PYTHON_INSTALL} {step0_location} {chain_add_location} {pathToInput} {pathToStep0OUT} >/dev/null 2>&1'
     os.system(chain_add_command)
-
+    print('1/3 done...')
     #change it to _linux for linux run, mac for mac run
     # json_command = f'python ./script/step1_create_json_from_PDB.py ./script/stride_mac {pathToStep0} {pathToJSON} > {join(pathToTempDirectory, "step1_log.txt")} 2>&1'
     step1_location = join(SW_INSTALL, 'script/step1_create_json_from_PDB.py')
     stride_location = join(SW_INSTALL, 'script/stride_linux')
     json_command = f'{PYTHON_INSTALL} {step1_location} {stride_location} {pathToStep0} {pathToJSON} >/dev/null 2>&1'
     os.system(json_command)
-
+    print('2/3 done...')
     step2_location = join(SW_INSTALL, 'script/step2_generate_casp_fragment_structures.py')
     rfpredictions_locations = join(SW_INSTALL, 'script/assist_generation_scripts/RF_Predictions/')
     frag_structure_command = f'{PYTHON_INSTALL} {step2_location} {pathToJSON} {rfpredictions_locations} {pathToZoomQAInputData} >/dev/null 2>&1'
     os.system(frag_structure_command)
-
+    print('3/3 done...')
+    
     return f'{pathToZoomQAInputData}'
 
 
