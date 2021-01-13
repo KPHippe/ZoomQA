@@ -13,6 +13,7 @@ import numpy as np
 from sklearn.svm import SVR
 
 from script.generate_formatted_SVR_input import parse_server_data
+from script.add_GDT import get_gdt
 
 PYTHON_INSTALL = 'python'
 SW_INSTALL = './'
@@ -254,6 +255,8 @@ def write_predictions(prediction_data, pathToSave, target_name):
             # prediction_string = ' '.join([str(round(pred, 3)) for pred in server_predictions])
             prediction_string = ''
             i = 0
+            gdt = get_gdt(server_predictions)
+            server_predictions.insert(0, gdt)
             for prediction in server_predictions:
                 prediction_string += str(round(prediction, 3)) + " "
                 if i % 25 == 0 and i != 0:
@@ -297,7 +300,7 @@ def main(pathToInput, pathToSave):
 
     # make predictions
     target_predictions = make_predictions(model, input_data)
-
+    
     #write predictions
     write_predictions(target_predictions, pathToSave, target_name)
     print(f"Prediction saved to {pathToSave}")
