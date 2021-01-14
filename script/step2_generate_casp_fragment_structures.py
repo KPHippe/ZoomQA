@@ -16,8 +16,7 @@ CASP_Fragment_Structures
             ServerName_02.pkl
             …
             ServerName_n.pkl
-        …(all other targets in CASP 6)
-        T0224
+        …(all other targets in CASP 6) T0224
             ServerName_01.pkl
             ServerName_02.pkl
             …
@@ -122,7 +121,7 @@ def process_target(target_path, pathToSave):
     '''
     json_data = load_json_file(target_path)
     casp_name = target_path.split("/")[-1].split("_")[0]
-    target_name = target_path.split("_")[-1].split(".")[0]
+    target_name = target_path.split("_")[-1]
     create_file(join(pathToSave, casp_name))
     create_file(join(pathToSave, casp_name, target_name))
     for server, server_data in json_data.items():

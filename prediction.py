@@ -125,11 +125,11 @@ def load_input_data(pathToData):
     server_names = os.listdir(pathToServers)
     # print(pathToServers)
 
-    input_data = {}
+    input_data = []
     for server_name in server_names:
         pathToServer = join(pathToServers, server_name)
         data = pickle.load(open(pathToServer, 'rb'))
-        input_data[server_name] = data
+        input_data.append((server_name, data))
 
     return input_data
 
@@ -186,7 +186,7 @@ def make_predictions(model, input_data):
         except:
             print(score)
     predictions = {}
-    for server_name, whole_target_data in input_data.items():
+    for (server_name, whole_target_data) in input_data:
         server_prediction = []
         #turn data into correct input form
         server_X, server_y = parse_server_data(whole_target_data, TOP_N)
@@ -198,6 +198,8 @@ def make_predictions(model, input_data):
         for prediction in server_prediction_normalized:
             server_prediction_distance.append(_un_norm_qa(prediction))
 
+        #add clipping here np.clip 
+        server_prediction_distance = np.clip(server_prediction_distance, 0, 25).tolist()
         predictions[server_name] = server_prediction_distance
 
     return predictions
@@ -251,7 +253,7 @@ def write_predictions(prediction_data, pathToSave, target_name):
 
         #write results
         for server_name_unformatted, server_predictions in prediction_data.items():
-            server_name_formatted = server_name_unformatted.split('.')[0]
+            server_name_formatted = server_name_unformatted.replace('.pkl', '')
             # prediction_string = ' '.join([str(round(pred, 3)) for pred in server_predictions])
             prediction_string = ''
             i = 0
@@ -262,7 +264,7 @@ def write_predictions(prediction_data, pathToSave, target_name):
                 if i % 25 == 0 and i != 0:
                     prediction_string += "\n"
                 i += 1
-            f.write(f"{server_name_formatted}\t{prediction_string}")
+            f.write(f"{server_name_formatted} {prediction_string}")
             f.write("\n")
 
         #write ending
