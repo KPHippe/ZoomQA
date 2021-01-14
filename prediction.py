@@ -15,7 +15,7 @@ from sklearn.svm import SVR
 from script.generate_formatted_SVR_input import parse_server_data
 from script.add_GDT import get_gdt
 
-PYTHON_INSTALL = 'python'
+PYTHON_INSTALL = 'python3'
 SW_INSTALL = './'
 
 TOP_N = 100
