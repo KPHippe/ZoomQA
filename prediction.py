@@ -307,9 +307,9 @@ def main(pathToInput, pathToSave):
     write_predictions(target_predictions, pathToSave, target_name)
     print(f"Prediction saved to {pathToSave}")
     #remove tmp folder
-    print("Cleaning up...")
-    folder_to_remove = join(pathToSave, 'tmp')
-    os.system(f'rm -rf {folder_to_remove}')
+    #print("Cleaning up...")
+    #folder_to_remove = join(pathToSave, 'tmp')
+    #os.system(f'rm -rf {folder_to_remove}')
     end = timer()
     total_t = end-start
     print(f"Prediction complete, elapsed time: {total_t}")
