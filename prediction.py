@@ -66,18 +66,27 @@ def preprocess_input(pathToInput, pathToSave):
     create_folder(pathToTempDirectory)
 
 
+    clean_data_path = join(pathToTempDirectory, 'cleaned_pdbs')
     pathToStep0 = join(pathToTempDirectory, 'step_0')
     pathToJSON = join(pathToTempDirectory, 'JSON_Data')
     pathToZoomQAInputData = join(pathToTempDirectory, 'ZoomQA_Input')
 
     print("Processing input data...")
+    create_folder(clean_data_path)
+    clean_data_program = join(SW_INSTALL, 'script/re_number_residue_index.pl')
+    clean_data_command = "perl {} {} {}"
+    for pdb in os.listdir(pathToInput): 
+        command = clean_data_command.format(clean_data_program, join(pathToInput, pdb), join(clean_data_path, pdb))
+        subprocess.run(command.split(" "))
+    print("Cleaned PDB's")
+
     # chain_add_command = f'python ./script/step0_prepare_add_chain_to_folder.py ./script/assist_add_chainID_to_one_pdb.pl {pathToInput} {pathToStep0} > {join(pathToTempDirectory, "step0_log.txt")} 2>&1'
     create_folder(pathToStep0)
     pathToStep0OUT = join(pathToStep0, target_name)
     #this was originally step0_prepare_add_chain_to_folder.py 
     step0_location = join(SW_INSTALL, 'script/step0_prepare_add_chain_to_folder_v2.py')
     chain_add_location = join(SW_INSTALL, 'script/assist_add_chainID_to_one_pdb.pl')
-    chain_add_command = f'{PYTHON_INSTALL} {step0_location} {chain_add_location} {pathToInput} {pathToStep0OUT} >/dev/null 2>&1'
+    chain_add_command = f'{PYTHON_INSTALL} {step0_location} {chain_add_location} {clean_data_path} {pathToStep0OUT} >/dev/null 2>&1'
     os.system(chain_add_command)
     print('1/3 done...')
     #change it to _linux for linux run, mac for mac run
@@ -307,9 +316,9 @@ def main(pathToInput, pathToSave):
     write_predictions(target_predictions, pathToSave, target_name)
     print(f"Prediction saved to {pathToSave}")
     #remove tmp folder
-    #print("Cleaning up...")
-    #folder_to_remove = join(pathToSave, 'tmp')
-    #os.system(f'rm -rf {folder_to_remove}')
+    print("Cleaning up...")
+    folder_to_remove = join(pathToSave, 'tmp')
+    os.system(f'rm -rf {folder_to_remove}')
     end = timer()
     total_t = end-start
     print(f"Prediction complete, elapsed time: {total_t}")
