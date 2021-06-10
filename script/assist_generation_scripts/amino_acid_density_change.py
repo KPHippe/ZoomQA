@@ -71,7 +71,10 @@ def apply_proportions(dist_dict):
     total = dist_dict['total']
     out = {}
     for aa, count in dist_dict.items():
-        out[aa] = count / total
+        try: 
+            out[aa] = count / total
+        except: 
+            out[aa] = 0 
 
     out['total'] = total
 

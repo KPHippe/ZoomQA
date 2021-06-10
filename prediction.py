@@ -199,6 +199,10 @@ def make_predictions(model, input_data):
         server_prediction = []
         #turn data into correct input form
         server_X, server_y = parse_server_data(whole_target_data, TOP_N)
+        #clean server_X 
+        server_X = np.asarray(server_X)
+        server_X = np.nan_to_num(server_X, nan=0, posinf=1, neginf=0)
+        server_X = np.clip(server_X, 0, 1)
 
         #get predictions
         server_prediction_normalized = model.predict(server_X)
