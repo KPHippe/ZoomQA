@@ -108,7 +108,10 @@ def _get_ave(local_contact_info):
             continue
         radius_ave = np.mean(np.asarray(distance_list))
         radius_of_gyration = np.max(np.asarray(distance_list))
-        ave_vector.append(radius_ave/radius_of_gyration)
+        if radius_of_gyration > 0: 
+            ave_vector.append(radius_ave/radius_of_gyration)
+        else: 
+            ave_vector.append(0)
     return np.asarray(ave_vector)
 
 def _get_std_ave(local_contact_info):
