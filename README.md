@@ -46,3 +46,9 @@ QA_examples
           │   ...
 ```
 - Currently only works on one `target_name` as shown above, will be updated soon
+
+
+## Ideas 
+* Distance map 
+	* Calculate the differnece betwen the features as another feature vector. 
+	* We could even make this a matrix by calculating the difference between feature 0 and all other features (this is a vector) then calculating the difference of feature 1 and all other features making a sort of distance map 
