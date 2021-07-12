@@ -28,9 +28,11 @@ The Estimation of Model Accuracy problem is a cornerstone problem in the field o
 		1. `conda create -n virtual-env-name python=3.7`
 		1. `conda activate virtual-env-name` this activates your new environment, this is where you install packages 
 1. `pip install -r requirements.txt`
+1. Navigate to the `ZoomQA`/ folder 
+1. Run `python install.py` to complete setup 
 
 ## Execution
-1. Navigate to ZoomQA folder (currently does not work out of folder, will be updated soon)
+1. Navigate to ZoomQA folder (You can now run this script from anywhere!)
 1. `python prediction.py ./QA_examples/Input/T1096 ./TEST_OUT/`
   - This command runs the prediction and places a text file in TEST_OUT/ folder
   - An example output is provided in `Example_Out/`
