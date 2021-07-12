@@ -1,10 +1,8 @@
 import os
 import re
 import sys
-import json
 import math
 import pickle
-import shutil
 import subprocess
 from os.path import join, isdir, isfile
 from timeit import default_timer as timer
@@ -12,11 +10,11 @@ from timeit import default_timer as timer
 import numpy as np
 from sklearn.svm import SVR
 
-from script.generate_formatted_SVR_input import parse_server_data
+from script.paths import PATHS
 from script.add_GDT import get_gdt
+from script.generate_formatted_SVR_input import parse_server_data
 
 PYTHON_INSTALL = 'python3'
-SW_INSTALL = './'
 
 TOP_N = 100
 ZOOMQA = '''\
@@ -31,8 +29,10 @@ ZOOMQA = '''\
 
 
 '''
+
+
 def preprocess_input(pathToInput, pathToSave):
-    '''
+    """
     This method is responsible for taking the pdb input files and extract
     all of the necesary features into the pickle files that can be easily
     transformed into the correct format for the model input, saves it to a temp
@@ -53,18 +53,18 @@ def preprocess_input(pathToInput, pathToSave):
         The return is the path to the final step (step2_generate_casp_fragment_structures)
         output so that the next step can use it as the input
 
-    '''
+    """
     pattern = re.compile(r"T\d{4}[a-zA-Z]*[0-9]*")
     target_name = re.search(pattern, pathToInput)
 
-    if target_name is not None: 
+    if target_name is not None:
         target_name = str(target_name[0])
-    else: 
+    else:
         target_name = 'Target'
 
     pathToTempDirectory = join(pathToSave, 'tmp')
     create_folder(pathToTempDirectory)
-
+    # os.system("chmod +777 " + pathToTempDirectory)
 
     clean_data_path = join(pathToTempDirectory, 'cleaned_pdbs')
     pathToStep0 = join(pathToTempDirectory, 'step_0')
@@ -73,9 +73,9 @@ def preprocess_input(pathToInput, pathToSave):
 
     print("Processing input data...")
     create_folder(clean_data_path)
-    clean_data_program = join(SW_INSTALL, 'script/re_number_residue_index.pl')
+    clean_data_program = join(PATHS.sw_install, 'script/re_number_residue_index.pl')
     clean_data_command = "perl {} {} {}"
-    for pdb in os.listdir(pathToInput): 
+    for pdb in os.listdir(pathToInput):
         command = clean_data_command.format(clean_data_program, join(pathToInput, pdb), join(clean_data_path, pdb))
         subprocess.run(command.split(" "))
     print("Cleaned PDB's")
@@ -83,30 +83,32 @@ def preprocess_input(pathToInput, pathToSave):
     # chain_add_command = f'python ./script/step0_prepare_add_chain_to_folder.py ./script/assist_add_chainID_to_one_pdb.pl {pathToInput} {pathToStep0} > {join(pathToTempDirectory, "step0_log.txt")} 2>&1'
     create_folder(pathToStep0)
     pathToStep0OUT = join(pathToStep0, target_name)
-    #this was originally step0_prepare_add_chain_to_folder.py 
-    step0_location = join(SW_INSTALL, 'script/step0_prepare_add_chain_to_folder_v2.py')
-    chain_add_location = join(SW_INSTALL, 'script/assist_add_chainID_to_one_pdb.pl')
-    chain_add_command = f'{PYTHON_INSTALL} {step0_location} {chain_add_location} {clean_data_path} {pathToStep0OUT} >/dev/null 2>&1'
-    os.system(chain_add_command)
+    # this was originally step0_prepare_add_chain_to_folder.py
+    step0_location = join(PATHS.sw_install, 'script/step0_prepare_add_chain_to_folder_v2.py')
+    chain_add_location = join(PATHS.sw_install, 'script/assist_add_chainID_to_one_pdb.pl')
+    chain_add_command = f'{PYTHON_INSTALL} {step0_location} {chain_add_location} {clean_data_path} {pathToStep0OUT}'
+    subprocess.run(chain_add_command.split(" "), stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     print('1/3 done...')
-    #change it to _linux for linux run, mac for mac run
+
+    # change it to _linux for linux run, mac for mac run
     # json_command = f'python ./script/step1_create_json_from_PDB.py ./script/stride_mac {pathToStep0} {pathToJSON} > {join(pathToTempDirectory, "step1_log.txt")} 2>&1'
-    step1_location = join(SW_INSTALL, 'script/step1_create_json_from_PDB.py')
-    stride_location = join(SW_INSTALL, 'script/stride_linux')
-    json_command = f'{PYTHON_INSTALL} {step1_location} {stride_location} {pathToStep0} {pathToJSON} >/dev/null 2>&1'
-    os.system(json_command)
+    step1_location = join(PATHS.sw_install, 'script/step1_create_json_from_PDB.py')
+    stride_location = join(PATHS.sw_install, 'script/stride_linux')
+    json_command = f'{PYTHON_INSTALL} {step1_location} {stride_location} {pathToStep0} {pathToJSON}'
+    subprocess.run(json_command.split(" "), stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     print('2/3 done...')
-    step2_location = join(SW_INSTALL, 'script/step2_generate_casp_fragment_structures.py')
-    rfpredictions_locations = join(SW_INSTALL, 'script/assist_generation_scripts/RF_Predictions/')
-    frag_structure_command = f'{PYTHON_INSTALL} {step2_location} {pathToJSON} {rfpredictions_locations} {pathToZoomQAInputData} >/dev/null 2>&1'
-    os.system(frag_structure_command)
+
+    step2_location = join(PATHS.sw_install, 'script/step2_generate_casp_fragment_structures.py')
+    rfpredictions_locations = join(PATHS.sw_install, 'script/assist_generation_scripts/RF_Predictions/')
+    frag_structure_command = f'{PYTHON_INSTALL} {step2_location} {pathToJSON} {rfpredictions_locations} {pathToZoomQAInputData}'
+    subprocess.run(frag_structure_command.split(" "), stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     print('3/3 done...')
-    
+
     return f'{pathToZoomQAInputData}'
 
 
 def load_input_data(pathToData):
-    '''
+    """
     This method is repsonsible for loading the output from preprocess_input and getting
     it staged for going into the model
 
@@ -122,14 +124,14 @@ def load_input_data(pathToData):
         The return is a dictionary where the keys are the server names, and the values
         are dictionaries of input features, will get formatted just before predictions are made
 
-    '''
-    #check if this path is to the data, or just to the folder containing it
+    """
+    # check if this path is to the data, or just to the folder containing it
     '''I need a better way to do this, this is messy and unreliable, but works for now'''
     pathToServers = pathToData
     folder_contents = os.listdir(pathToServers)
     while isdir(join(pathToServers, folder_contents[0])):
         pathToServers = join(pathToServers, folder_contents[0])
-        folder_contents=os.listdir(pathToServers)
+        folder_contents = os.listdir(pathToServers)
 
     server_names = os.listdir(pathToServers)
     # print(pathToServers)
@@ -142,8 +144,9 @@ def load_input_data(pathToData):
 
     return input_data
 
+
 def load_model(pathToModel):
-    '''
+    """
     This method loads a pre-trained model for QA predictions
 
     Parameters:
@@ -156,7 +159,7 @@ def load_model(pathToModel):
     SVR model:
         This is the SVR trained on the top 100 features
 
-    '''
+    """
 
     with open(pathToModel, 'rb') as f:
         model = pickle.load(f)
@@ -166,8 +169,9 @@ def load_model(pathToModel):
 
     return model
 
+
 def make_predictions(model, input_data):
-    '''
+    """
     This method is responsible for making predictions on the input data
 
     Parameters:
@@ -185,33 +189,30 @@ def make_predictions(model, input_data):
         values are a list that correspond to the distance in angstroms of the predicted
         amino acid compared to an unknown ground truth
 
-    '''
+    """
 
     def _un_norm_qa(score):
         np.clip(score, 0, 1)
         # sqrt(((1/norm)-1) * 12)
         try:
-            return math.sqrt(((1/np.clip(score, 1e-5, 1))-1)*12)
+            return math.sqrt(((1 / np.clip(score, 1e-5, 1)) - 1) * 12)
         except:
             print(score)
+
     predictions = {}
     for (server_name, whole_target_data) in input_data:
         server_prediction = []
-        #turn data into correct input form
+        # turn data into correct input form
         server_X, server_y = parse_server_data(whole_target_data, TOP_N)
-        #clean server_X 
-        #server_X = np.asarray(server_X)
-        #server_X = np.nan_to_num(server_X, nan=0, posinf=1, neginf=0)
-        #server_X = np.clip(server_X, 0, 1)
 
-        #get predictions
+        # get predictions
         server_prediction_normalized = model.predict(server_X)
-        #convert scores to distance
+        # convert scores to distance
         server_prediction_distance = []
         for prediction in server_prediction_normalized:
             server_prediction_distance.append(_un_norm_qa(prediction))
 
-        #add clipping here np.clip 
+        # add clipping here np.clip
         server_prediction_distance = np.clip(server_prediction_distance, 0, 25).tolist()
         predictions[server_name] = server_prediction_distance
 
@@ -219,7 +220,7 @@ def make_predictions(model, input_data):
 
 
 def write_predictions(prediction_data, pathToSave, target_name):
-    '''
+    """
     This method writes out the predictions in CASP format
 
     Parameters:
@@ -242,7 +243,7 @@ def write_predictions(prediction_data, pathToSave, target_name):
         This method just writes to an output text file
 
 
-    '''
+    """
 
     '''
     Header format:
@@ -255,7 +256,7 @@ def write_predictions(prediction_data, pathToSave, target_name):
     '''
 
     with open(join(pathToSave, f'{target_name}.txt'), 'w+') as f:
-        #set up the header
+        # set up the header
         f.write('PFRMAT\tQA\n')
         f.write(f'TARGET\t{target_name}\n')
         f.write(f"AUTHOR\tYOUR_NAME_HERE\n")
@@ -264,7 +265,7 @@ def write_predictions(prediction_data, pathToSave, target_name):
         f.write("MODEL\t1\n")
         f.write("QMODE\t2\n")
 
-        #write results
+        # write results
         for server_name_unformatted, server_predictions in prediction_data.items():
             server_name_formatted = server_name_unformatted.replace('.pkl', '')
             # prediction_string = ' '.join([str(round(pred, 3)) for pred in server_predictions])
@@ -280,51 +281,51 @@ def write_predictions(prediction_data, pathToSave, target_name):
             f.write(f"{server_name_formatted} {prediction_string}")
             f.write("\n")
 
-        #write ending
+        # write ending
         f.write("END\n")
-
 
 
 def main(pathToInput, pathToSave):
     start = timer()
-    pathToModel = './model/LocalQA_rbf_1_1.mdl'
-    
+
+    pathToModel = PATHS.model_path
+
     pattern = re.compile(r"T\d{4}[a-zA-Z]*[0-9]*")
     target_name = re.search(pattern, pathToInput)
 
-    if target_name is not None: 
+    if target_name is not None:
         target_name = str(target_name[0])
-    else: 
+    else:
         target_name = 'Target'
 
-    #create save folder
+    # create save folder
     create_folder(pathToSave)
 
-    #make the data the proper input format for the model
+    # make the data the proper input format for the model
     model_input_path = preprocess_input(pathToInput, pathToSave)
     print("Input data created...")
 
-    #load input data
-    #remove when done testing
+    # load input data
+    # remove when done testing
     # model_input_path = './TEST_OUT/tmp/ZoomQA_Input/step/T1096/'
     input_data = load_input_data(model_input_path)
     print("Input data loaded...")
 
-    #load models
+    # load models
     model = load_model(pathToModel)
 
     # make predictions
     target_predictions = make_predictions(model, input_data)
-    
-    #write predictions
+
+    # write predictions
     write_predictions(target_predictions, pathToSave, target_name)
     print(f"Prediction saved to {pathToSave}")
-    #remove tmp folder
+    # remove tmp folder
     print("Cleaning up...")
     folder_to_remove = join(pathToSave, 'tmp')
     os.system(f'rm -rf {folder_to_remove}')
     end = timer()
-    total_t = end-start
+    total_t = end - start
     print(f"Prediction complete, elapsed time: {total_t}")
 
 
@@ -340,6 +341,7 @@ def create_folder(pathToFolder):
     except:
         print(f"Fatal error making {pathToFolder}")
 
+
 if __name__ == "__main__":
     if len(sys.argv) < 3:
         print('Not enough arguments... example command: ')
@@ -347,7 +349,7 @@ if __name__ == "__main__":
         sys.exit()
 
     print(ZOOMQA)
-    #sys.exit()
+    # sys.exit()
     pathToInput = sys.argv[1]
     pathToSave = sys.argv[2]
 

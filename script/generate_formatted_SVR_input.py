@@ -1,6 +1,10 @@
 import numpy as np
+from os.path import join
+
+from .paths import PATHS
 
 MAX_RADIUS = 55
+
 
 def get_top_n_features(threshold, feature_ranks, X):
     '''
@@ -33,8 +37,8 @@ def get_top_n_features(threshold, feature_ranks, X):
 
         feature_training_set.append(np.asarray(augmented_example))
 
-
     return feature_training_set
+
 
 def get_feature_ranks():
     '''
@@ -50,8 +54,8 @@ def get_feature_ranks():
     list: [string]
         A list of strings of the feature indexes ranked from best to worst by pearson correlation
     '''
-    #load and parse the feature ranks
-    pathToFeatureScores = './script/Pearson_Correlation_Individula_Features.txt'
+    # load and parse the feature ranks
+    pathToFeatureScores = join(PATHS.sw_install, './script/Pearson_Correlation_Individula_Features.txt')
 
     raw_data = open(pathToFeatureScores).read()
     feature_ranks = []
@@ -60,6 +64,7 @@ def get_feature_ranks():
         feature_ranks.append(line_data[0])
 
     return feature_ranks
+
 
 def flatten(data):
     '''
@@ -77,6 +82,7 @@ def flatten(data):
     for i in range(len(data)):
         x_flatten = data[i].flatten()
         data[i] = x_flatten
+
 
 def parse_server_data(server_data, top_n):
     '''
@@ -96,7 +102,7 @@ def parse_server_data(server_data, top_n):
     '''
     feature_ranks = get_feature_ranks()
 
-    server_X,server_y = [],[]
+    server_X, server_y = [], []
 
     for index, data_dictionary in server_data.items():
         X = []
@@ -131,30 +137,31 @@ def parse_server_data(server_data, top_n):
         for aa_row in contact_fequency_map:
             X.append(aa_row[:MAX_RADIUS])
 
-        #misc rows
-        #total entries: 4 + 1 + 1 + 1 + 1 + 1 + 1 + 3 + 20 = 33
+        # misc rows
+        # total entries: 4 + 1 + 1 + 1 + 1 + 1 + 1 + 3 + 20 = 33
         rf_pred = data_dictionary['rf_predictions']
-        aa_mass, aa_hydro, aa_sol, aa_iso = data_dictionary['aa_mass'], data_dictionary['aa_hydro'], data_dictionary['aa_sol'], data_dictionary['aa_iso']
+        aa_mass, aa_hydro, aa_sol, aa_iso = data_dictionary['aa_mass'], data_dictionary['aa_hydro'], data_dictionary[
+            'aa_sol'], data_dictionary['aa_iso']
         psi, phi = data_dictionary['psiphi'][0], data_dictionary['psiphi'][1]
         ss = data_dictionary['ss_encoded']
         aa_one_hot = data_dictionary['aa_encoded']
 
         row_1 = []
         row_1.extend(rf_pred)
-        row_1.extend([aa_mass, aa_hydro, aa_sol,])
+        row_1.extend([aa_mass, aa_hydro, aa_sol, ])
         row_1.extend(aa_iso)
         row_1.extend([psi, phi])
         row_1.extend(ss)
-        row_1.extend([0]* (MAX_RADIUS - len(row_1)))
+        row_1.extend([0] * (MAX_RADIUS - len(row_1)))
 
         row_2 = []
         row_2.extend(aa_one_hot)
-        row_2.extend([0]* (MAX_RADIUS - len(row_2)))
+        row_2.extend([0] * (MAX_RADIUS - len(row_2)))
 
         server_X.append(np.asarray(X))
         server_y.append(np.asarray(y))
 
     flatten(server_X)
-    svr_input = get_top_n_features(top_n,feature_ranks,  server_X)
+    svr_input = get_top_n_features(top_n, feature_ranks, server_X)
 
     return np.asarray(svr_input), np.array(server_y)

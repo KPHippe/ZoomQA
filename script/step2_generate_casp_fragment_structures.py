@@ -50,7 +50,9 @@ import numpy as np
 from os.path import join, getsize
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
-sys.path.insert(1, './script/assist_generation_scripts')
+from paths import PATHS
+
+sys.path.insert(1, join(PATHS.sw_install, './script/assist_generation_scripts'))
 
 from amino_acid_density_change import *
 from hydrophobicity_change import *
@@ -146,8 +148,10 @@ def process_target(target_path, pathToSave):
                 sequence_aa = server_data['aa'][index]
                 local_ss = server_data['ss'][index]
 
-                local_psi, local_phi = int(float(server_data['Angles']['psi_im1'][index])), int(float(server_data['Angles']['phi'][index]))
-                rf_predictions = get_prediction((local_psi + 180), (local_phi + 180), sequence_aa) #have to add 180 because its in a ramachandran plot
+                local_psi, local_phi = int(float(server_data['Angles']['psi_im1'][index])), int(
+                    float(server_data['Angles']['phi'][index]))
+                rf_predictions = get_prediction((local_psi + 180), (local_phi + 180),
+                                                sequence_aa)  # have to add 180 because its in a ramachandran plot
                 server_vectors[index]['rf_predictions'] = rf_predictions
 
                 non_change_data = get_non_change_features(server_data, index)
@@ -161,35 +165,39 @@ def process_target(target_path, pathToSave):
                 structure_contact_matrix = get_protein_contact_frequeny(server_data, index)
                 server_vectors[index]['structure_contact_matrix'] = structure_contact_matrix
 
-            pickle.dump(server_vectors ,open(server_save, 'wb'))
+            pickle.dump(server_vectors, open(server_save, 'wb'))
             print(f"Saved {server_name} to {server_save}")
         except Exception as e:
             print(f"Error creating {target_name}")
+
+
 def load_json_file(target_path):
     return json.load(open(target_path))
 
+
 def main(pathToData, pathToRandomForestPredictions, pathToSave):
-    #load the random forest models so we don't have to distribute a list of them
+    # load the random forest models so we don't have to distribute a list of them
     load_RF_predictions(pathToRandomForestPredictions)
 
     targets_list = os.listdir(pathToData)
     path_list = []
     for target in targets_list:
         if "tmp" in target:
-            #this is a tmprun file, does not actually contain data
+            # this is a tmprun file, does not actually contain data
             continue
         path_list.append(join(pathToData, target))
 
     create_file(pathToSave)
     print('Saving data...')
-    with ProcessPoolExecutor(max_workers = int(os.cpu_count() * 0.70)) as executor:
-        executor.map(process_target, path_list, [pathToSave]* len(path_list))
+    with ProcessPoolExecutor(max_workers=int(os.cpu_count() * 0.70)) as executor:
+        executor.map(process_target, path_list, [pathToSave] * len(path_list))
 
     # for target_path in path_list:
     #     process_target(target_path, pathToSave)
     #     break
 
     print("\n\nData generation complete")
+
 
 def create_file(pathToFile):
     try:
@@ -205,7 +213,8 @@ if __name__ == "__main__":
 
     if len(sys.argv) < 4:
         print("Not enough arguemnts, example command: ")
-        print(f"python {sys.argv[0]} /data/shared/databases/CASP_ALL_JSON /data/summer2020/Kyle/CASP14/Data/Angles/AminoAcid_RF/RF_Predictions /data/summer2020/Kyle/CASP14/Data/Graphs/CASP_Fragment_Databse/ ")
+        print(
+            f"python {sys.argv[0]} /data/shared/databases/CASP_ALL_JSON /data/summer2020/Kyle/CASP14/Data/Angles/AminoAcid_RF/RF_Predictions /data/summer2020/Kyle/CASP14/Data/Graphs/CASP_Fragment_Databse/ ")
 
         sys.exit()
 
